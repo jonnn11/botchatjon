@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Telegram Panel</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: linear-gradient(135deg, #0f2027, #2c5364);
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+
+.container {
+    max-width: 400px;
+    margin: auto;
+    background: rgba(255,255,255,0.1);
+    padding: 20px;
+    border-radius: 15px;
+}
+
+input, textarea {
+    width: 100%;
+    margin: 5px 0;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+}
+
+button {
+    padding: 10px;
+    margin: 5px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn-primary { background: #00c6ff; }
+.btn-danger { background: #ff4b5c; }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>🔥 Telegram Sender</h2>
+
+    <input id="api_id" placeholder="API ID">
+    <input id="api_hash" placeholder="API Hash">
+    <input id="phone" placeholder="+628xxxx">
+
+    <button class="btn-primary" onclick="sendCode()">Kirim Kode</button>
+
+    <input id="code" placeholder="Masukkan OTP">
+    <button class="btn-primary" onclick="verify()">Login</button>
+
+    <hr>
+
+    <textarea id="groups" placeholder="Group (1 per line)"></textarea>
+    <textarea id="messages" placeholder="Pesan (1 per line)"></textarea>
+    <input id="delay" placeholder="Delay (detik)">
+
+    <button class="btn-primary" onclick="startBot()">Start</button>
+    <button class="btn-danger" onclick="stopBot()">Stop</button>
+</div>
+
+<script>
+const API = "http://127.0.0.1:5000";
+
+// ================= SEND CODE =================
+function sendCode() {
+    const data = {
+        api_id: document.getElementById("api_id").value.trim(),
+        api_hash: document.getElementById("api_hash").value.trim(),
+        phone: document.getElementById("phone").value.trim()
+    };
+
+    console.log("SEND CODE:", data);
+
+    fetch(API + "/send_code", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(res => {
+        console.log("RESP:", res);
+        alert(JSON.stringify(res));
+    })
+    .catch(err => {
+        console.error("ERROR:", err);
+        alert("Gagal konek backend");
+    });
+}
+
+// ================= VERIFY =================
+function verify() {
+    const code = document.getElementById("code").value.trim();
+
+    console.log("VERIFY:", code);
+
+    fetch(API + "/verify", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ code: code })
+    })
+    .then(res => res.json())
+    .then(res => {
+        console.log(res);
+        alert(JSON.stringify(res));
+    });
+}
+
+// ================= START BOT =================
+function startBot() {
+    const groups = document.getElementById("groups").value.split("\n");
+    const messages = document.getElementById("messages").value.split("\n");
+    const delay = document.getElementById("delay").value;
+
+    fetch(API + "/start", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            groups: groups,
+            messages: messages,
+            delay: delay
+        })
+    })
+    .then(res => res.json())
+    .then(res => alert(JSON.stringify(res)));
+}
+
+// ================= STOP BOT =================
+function stopBot() {
+    fetch(API + "/stop", {
+        method: "POST"
+    })
+    .then(res => res.json())
+    .then(res => alert(JSON.stringify(res)));
+}
+</script>
+
+</body>
+</html>
